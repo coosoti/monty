@@ -48,7 +48,7 @@ void push(stack_t **top, int n)
 }
 
 /**
- * pall - prints all the values on the stack, starting from the top of the stack
+ * pall - prints all the values on the stack,starting from the top of the stack
  * @head: double pointer pointing to the top of the stack
  * @line_number: index of argument/instructions
  * Return: void
@@ -62,6 +62,6 @@ void pall(stack_t **head, unsigned int line_number)
 	while (current)
 	{
 		printf("%d\n", current->n);
-                current = current->prev;
-        }
+		current = current->prev;
+	}
 }
