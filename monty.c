@@ -59,6 +59,7 @@ void execute(char *op, stack_t **stack, unsigned int line_number)
 	instruction_t codes[] = {
 		{"push", push},
 		{"pall", pall},
+		{"pint", pint},
 		{NULL, NULL}
 	};
 	for (i = 0; codes[i].opcode != NULL; i++)
