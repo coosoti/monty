@@ -1,110 +1,75 @@
 #include "monty.h"
 
-struct global glob;
+qs_t var;
 
 /**
  * main - entry level - interpreter for Monty ByteCodes files
- * @ac: number of arguments
- * @av: arguments(strings)
- * Return: 0 for success, EXIT_FAILURE for failure
+ * @argc: number of arguments passed
+ * @argv: array of arguments(strings)
+ * Return: EXIT_SUCCESS for success, EXIT_FAILURE for failure
  */
 
-int main(int ac, char **av)
+int main(int argc, char *argv[])
 {
-	stack_t *top = NULL;
-	size_t size;
-	char *line, *n;
-	unsigned int i = 0;
+	char *line = NULL, *op = NULL;
+	size_t n = 0;
+	stack_t *stack = NULL;
+	unsigned int line_number = 0;
+	FILE *fs = NULL;
 
-	glob.selector = 0;
-	glob.buffer  = NULL;
-
-	if (ac != 2)
+	var.q_or_s = 0;
+	var.qs_len = 0;
+	if (argc != 2)
 	{
-		printf("USAGE: monty file\n");
+		dprintf(STDOUT_FILENO, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	glob.instruction = fopen(av[1], "r");
-	if (glob.instruction == NULL)
+	fs = fopen(argv[1], "r");
+	if (fs == NULL)
 	{
-		printf("Error: can't open file %s\n", av[1]);
+		dprintf(STDOUT_FILENO, "Error: Can't open file %s\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
-	while (getline(&glob.buffer, &size, glob.instruction) != -1)
+	on_exit(free_line, &line);
+	on_exit(free_stack, &stack);
+	on_exit(fs_close, fs);
+	while (getline(&line, &n, fs) != -1)
 	{
-		i++;
-		line = strtok(glob.buffer, "\r \t\n");
-		if (line[0] == '#')
-			continue;
-		if (!strcmp(line, "push"))
+		line_number++;
+		op = strtok(line, "\n\t\r ");
+		if (op != NULL && op[0] != '#')
 		{
-			n = strtok(NULL, "\r \t\n");
-			push(&top, str_to_int(&top, n, i));
-			continue;
+			execute(op, &stack, line_number);
 		}
-		execute(line, i, &top);
 	}
-
-	free_stack(&top);
-	free(glob.buffer);
-	fclose(glob.instruction);
-	return (0);
+	exit(EXIT_SUCCESS);
 }
 
 /**
  * execute - confirm and execute instruction
- * @line: instruction
- * @i: index of the arguments
- * @top: double pointer pointing to the stack's top
- * Return: 1 on success
+ * @op: instruction to check
+ * @line_number: script line number
+ * @stack: double pointer pointing to the stack's top
+ * Return: void
  */
 
-int execute(char *line, unsigned int i, stack_t **top)
+void execute(char *op, stack_t **stack, unsigned int line_number)
 {
-	static instruction_t codes[] = {
+	size_t i;
+	instruction_t codes[] = {
+		{"push", push},
 		{"pall", pall},
 		{NULL, NULL}
 	};
-	unsigned int j = 0;
-
-	while (codes[j].opcode)
+	for (i = 0; codes[i].opcode != NULL; i++)
 	{
-		if (!strcmp(codes[j].opcode, line))
+		if (strcmp(codes[i].opcode, op) == 0)
 		{
-			codes[j].f(top, i);
-			return (1);
+			codes[i].f(stack, line_number);
+			return;
 		}
-		j++;
 	}
-	printf("L%u: unknown intruction %s\n", i, line);
-	free_all(top);
-	return (1);
-}
-
-/**
- * str_to_int - convert string to int
- * @top: double pointer pointing to the stack's top
- * @i: index of line argument
- * @n: data (string)
- * Return: int or free_all in called
- */
-
-int str_to_int(stack_t **top, char *n, unsigned int i)
-{
-	int num = 1;
-	int j = 0;
-
-	if (n[0] == '-')
-		j = 1;
-	while (n[j])
-	{
-		if (!isdigit(n[j]))
-		{
-			printf("L%u: usage: push integer\n", i);
-			free_all(top);
-		}
-		j++;
-	}
-	num *= atoi(n);
-	return (num);
+	dprintf(STDOUT_FILENO, "L%u: unknown instruction %s\n",
+		line_number, op);
+	exit(EXIT_FAILURE);
 }

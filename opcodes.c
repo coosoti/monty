@@ -1,67 +1,74 @@
 #include "monty.h"
 
 /**
- * push - adds an element to the stack
- * @top: double pointer to the top of the stack
- * @n: element(data) to add to the stack
+ * check_digit - checks that a string argument contains only digits
+ * @arg: string to check
+ *
+ * Return: 0 if only digits, else 1
+ */
+static int check_digit(char *arg)
+{
+	int i;
+
+	for (i = 0; arg[i]; i++)
+	{
+		if (arg[i] == '-' && i == 0)
+			continue;
+		if (isdigit(arg[i]) == 0)
+			return (1);
+	}
+	return (0);
+}
+
+/**
+ * push - push an integer element onto the stack
+ * @stack: double pointer to the top of the stack
+ * @line_number: script line number
+ *
  * Return: void
  */
-void push(stack_t **top, int n)
+void push(stack_t **stack, unsigned int line_number)
 {
-	stack_t *new, *current;
+	char *arg;
+	int n;
 
-	new = malloc(sizeof(stack_t));
-	if (!new)
+	arg = strtok(NULL, "\n\t\r ");
+	if (arg == NULL || check_digit(arg))
 	{
-		printf("Error: malloc failed\n");
-		free_all(top);
+		dprintf(STDOUT_FILENO, "L%u: usage: push integer\n",
+			line_number);
+		exit(EXIT_FAILURE);
 	}
-	if (!glob.selector)
+	n = atoi(arg);
+	if (!add_node(stack, n))
 	{
-		if (!*top)
-			new->prev = NULL;
-		else
-		{
-			new->prev = *top;
-			new->prev->next = new;
-		}
-		new->next = NULL;
-		new->n = n;
-		*top = new;
+		dprintf(STDOUT_FILENO, "Error: malloc failed\n");
+		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		new->n = n;
-		new->prev = NULL;
-		new->next = NULL;
-		if (!top)
-			*top = new;
-		else
-		{
-			current = *top;
-			while (current->prev)
-				current = current->prev;
-			new->next = current;
-			current->prev = new;
-		}
-	}
+	var.qs_len++;
 }
 
 /**
  * pall - prints all the values on the stack,starting from the top of the stack
- * @head: double pointer pointing to the top of the stack
+ * @stack: double pointer pointing to the top of the stack
  * @line_number: index of argument/instructions
  * Return: void
  */
 
-void pall(stack_t **head, unsigned int line_number)
+void pall(stack_t **stack, unsigned int line_number)
 {
-	stack_t *current = *head;
-	(void) line_number;
+	stack_t *head;
 
-	while (current)
+	(void)(line_number);
+
+	head = *stack;
+	while (head != NULL)
 	{
-		printf("%d\n", current->n);
-		current = current->prev;
+		printf("%d\n", head->n);
+		head = head->next;
+		if (head == *stack)
+		{
+			return;
+		}
 	}
 }
