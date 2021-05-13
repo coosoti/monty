@@ -95,7 +95,7 @@ void add(stack_t **stack, unsigned int line_number)
 
 	if (var.qs_len < 2)
 	{
-		dprintf(STDOUT_FILENO,
+		dprintf(STDERR_FILENO,
 			"L%u: can't add, stack too short\n",
 			line_number);
 		exit(EXIT_FAILURE);
