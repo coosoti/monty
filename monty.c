@@ -21,13 +21,13 @@ int main(int argc, char *argv[])
 	var.qs_len = 0;
 	if (argc != 2)
 	{
-		dprintf(STDOUT_FILENO, "USAGE: monty file\n");
+		dprintf(STDERR_FILENO, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
 	fs = fopen(argv[1], "r");
 	if (fs == NULL)
 	{
-		dprintf(STDOUT_FILENO, "Error: Can't open file %s\n", argv[1]);
+		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 	on_exit(free_line, &line);
@@ -70,7 +70,7 @@ void execute(char *op, stack_t **stack, unsigned int line_number)
 			return;
 		}
 	}
-	dprintf(STDOUT_FILENO, "L%u: unknown instruction %s\n",
+	dprintf(STDERR_FILENO, "L%u: unknown instruction %s\n",
 		line_number, op);
 	exit(EXIT_FAILURE);
 }
