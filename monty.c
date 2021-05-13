@@ -63,6 +63,7 @@ void execute(char *op, stack_t **stack, unsigned int line_number)
 		{"pop", pop},
 		{"swap", swap},
 		{"add", add},
+		{"nop", nop},
 		{NULL, NULL}
 	};
 	for (i = 0; codes[i].opcode != NULL; i++)
